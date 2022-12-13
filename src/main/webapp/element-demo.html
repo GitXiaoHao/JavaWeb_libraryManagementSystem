@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 1. 引入vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 2. 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 3. 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+</head>
+<body>
+<div id="app">
+    <template>
+        Scroll down to see the bottom-right button.
+        <el-backtop target=".page-component__scroll .el-scrollbar__wrap"></el-backtop>
+    </template>
+
+</div>
+<script>
+    new Vue({
+       el:"#app"
+    });
+</script>
+</body>
+</html>

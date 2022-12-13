@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <!--    引入映射文件-->
+    <properties resource="jdbc.properties"/>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--        开启延迟加载-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+    </settings>
+    <!--    别名 -->
+    <typeAliases>
+        <package name="com.yh.web.pojo"/>
+    </typeAliases>
+    <!--    分页插件-->
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"/>
+    </plugins>
+    <!--环境配置，连接的数据库，这里使用的是MySQL-->
+    <!--    可以配置多个environment 通过default切换不同environment-->
+    <!--
+           配置数据库 default 默认对应的环境id
+    -->
+    <environments default="mysql">
+        <!--        配置某个具体的环境
+            id：表示连接数据库的环境的唯一标识 不能重复
+    -->
+        <environment id="mysql">
+            <!--
+                指定事务管理的类型，这里简单使用Java的JDBC的提交和回滚设置
+                    type: JDBC / MANAGED
+                        JDBC: 表示当前环境中，执行SQL时，使用的是JDBC中原生的事务管理方式 事物的提交或手动需要手动处理
+                        MANAGED: 被管理 例如Spring
+             -->
+            <transactionManager type="JDBC"/>
+            <!--dataSource
+                指连接源配置，POOLED是JDBC连接对象的数据源连接池的实现
+                type 设置数据源的类型 POOLED / UNPOOLED / JNDI
+                    POOLED 表示使用数据库连坚持缓存数据库连接
+                    UNPOOLED 表示不使用数据库连接池
+                    JNDI 表示使用上下文中的数据源
+            -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <!--这是告诉Mybatis区哪找持久化类的映射文件，对于在src下的文件直接写文件名，
+            如果在某包下，则要写明路径,如：com/mybatistest/config/UserMapper.xml-->
+        <!--        <mapper resource="com/yh/mapper/UserMapper.xml"/>-->
+        <!--        mapper代理-->
+        <package name="com.yh.web.mapper"/>
+    </mappers>
+</configuration>
