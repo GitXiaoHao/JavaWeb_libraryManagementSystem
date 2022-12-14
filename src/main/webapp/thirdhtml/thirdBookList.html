@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../thirdcss/thirdBookAll.css">
+    <!-- 1. 引入vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 2. 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 3. 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="../jquery/jquery-3.6.1.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div class="container">
+        <h2 contenteditable="true">图书</h2>
+    </div>
+    <!--表单-->
+    <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-form-item label="图书名称">
+            <el-input v-model="formInline.bookName" placeholder="名称"></el-input>
+        </el-form-item>
+        <el-form-item label="作者">
+            <el-input v-model="formInline.bookAuthor" placeholder="作者"></el-input>
+        </el-form-item>
+        <el-form-item label="图书类型">
+            <el-select v-model="formInline.bookType" placeholder="图书类型" :data="bookTypes">
+                <!--                <el-option label="区域一" value="shanghai"></el-option>-->
+                <!--                <el-option label="区域二" value="beijing"></el-option>-->
+                <el-option
+                        v-for="item in bookTypes"
+                        :key="item.bookTypeName"
+                        :label="item.bookTypeName"
+                        :value="item.bookTypeName">
+                </el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit(1,5)">查询</el-button>
+        </el-form-item>
+    </el-form>
+
+    <!--    新增和删除-->
+    <el-row>
+        <el-button type="primary" plain @click="newlyAdded = true">新增</el-button>
+        <el-button type="warning" plain @click="batchDeleteBook()">批量删除</el-button>
+    </el-row>
+    <!--    新增的对话框-->
+    <el-dialog title="新增图书" :visible.sync="newlyAdded">
+        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+            <el-form-item label="图书名称" prop="bookName">
+                <el-input v-model="ruleForm.bookName"></el-input>
+            </el-form-item>
+            <el-form-item label="作者" prop="bookAuthor">
+                <el-input v-model="ruleForm.bookAuthor"></el-input>
+            </el-form-item>
+            <el-form-item label="出版时间" required>
+                <el-col :span="11">
+                    <el-form-item prop="bookPublicationDate">
+                        <el-date-picker type="date" value-format="yyyy-MM-dd" placeholder="选择日期"
+                                        v-model="ruleForm.bookPublicationDate"
+                                        style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="出版社" prop="bookPress">
+                <el-input v-model="ruleForm.bookPress"></el-input>
+            </el-form-item>
+            <el-form-item label="价格" prop="bookPrice">
+                <el-input v-model="ruleForm.bookPrice"></el-input>
+            </el-form-item>
+            <el-form-item label="ISBN码" prop="bookIsbn">
+                <el-input v-model="ruleForm.bookIsbn"></el-input>
+            </el-form-item>
+            <el-form-item label="图书类型" prop="bookType">
+                <el-select v-model="ruleForm.bookType" placeholder="请选择图书类型" :data="bookTypes">
+                    <el-option
+                            v-for="item in bookTypes"
+                            :key="item.bookTypeName"
+                            :label="item.bookTypeName"
+                            :value="item.bookTypeName">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="图书简介" prop="bookIntroduce">
+                <el-input type="textarea" v-model="ruleForm.bookIntroduce"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+                <el-button @click="resetForm('ruleForm')">重置</el-button>
+                <el-button type="info" plain @click="newlyAdded = false">取消</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+    <!--    表格-->
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                :row-class-name="tableRowClassName"
+                highlight-current-row
+                @current-change="handleCurrentChange"
+                @selection-change="handleSelectionChange"
+        >
+            <el-table-column
+                    type="selection"
+                    align="center"
+                    fixed="left"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    type="index"
+                    label="编号"
+                    align="center"
+                    width="50">
+            </el-table-column>
+            <el-table-column
+                    prop="bookName"
+                    label="图书名称"
+                    align="center">
+            </el-table-column>
+            <el-table-column
+                    prop="bookAuthor"
+                    label="作者"
+                    align="center">
+            </el-table-column>
+            <el-table-column
+                    prop="bookPublicationDate"
+                    label="出版时间"
+                    type="date"
+                    align="center">
+            </el-table-column>
+            <el-table-column
+                    prop="bookPrice"
+                    label="价格"
+                    align="center">
+            </el-table-column>
+            <el-table-column
+                    prop="bookIsbn"
+                    label="ISBN码"
+                    align="center">
+            </el-table-column>
+
+            <el-table-column
+                    prop="bookType"
+                    label="类型"
+                    align="center">
+            </el-table-column>
+            <el-table-column
+                    prop="bookStatus"
+                    label="状态"
+                    align="center">
+            </el-table-column>
+            <el-table-column
+                    label="操作"
+                    align="center"
+                    width="170"
+                    fixed="right"
+                    @current-change="handleCurrentChange"
+            >
+                <el-button type="warning" style="float:left;" @click="update=true">修改</el-button>
+                <el-button type="danger" style="float:right;" @click="deleteBook()">删除</el-button>
+            </el-table-column>
+        </el-table>
+    </template>
+
+
+    <!--    修改的对话框-->
+    <el-dialog title="新增图书" :visible.sync="update">
+        <el-form :model="currentRow" :rules="rules" ref="currentRow" label-width="100px" class="demo-ruleForm">
+            <el-form-item label="图书名称" prop="bookName">
+                <el-input v-model="currentRow.bookName" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="作者" prop="bookAuthor" >
+                <el-input v-model="currentRow.bookAuthor" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="出版时间" required>
+                <el-col :span="11">
+                    <el-form-item prop="bookPublicationDate">
+                        <el-date-picker type="date" value-format="yyyy-MM-dd" placeholder="选择日期"
+                                        v-model="currentRow.bookPublicationDate"
+                                        style="width: 100%;"></el-date-picker>
+                    </el-form-item>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="出版社" prop="bookPress">
+                <el-input v-model="currentRow.bookPress"></el-input>
+            </el-form-item>
+            <el-form-item label="价格" prop="bookPrice">
+                <el-input v-model="currentRow.bookPrice"></el-input>
+            </el-form-item>
+            <el-form-item label="ISBN码" prop="bookIsbn">
+                <el-input v-model="currentRow.bookIsbn"></el-input>
+            </el-form-item>
+            <el-form-item label="图书类型" prop="bookType">
+                <el-select v-model="currentRow.bookType" placeholder="请选择图书类型" :data="bookTypes">
+                    <el-option
+                            v-for="item in bookTypes"
+                            :key="item.bookTypeName"
+                            :label="item.bookTypeName"
+                            :value="item.bookTypeName">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="图书简介" prop="bookIntroduce">
+                <el-input type="textarea" v-model="currentRow.bookIntroduce"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="updateSubmitForm('currentRow')">立即修改</el-button>
+                <el-button type="info" plain @click="update = false">取消</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+    <!--    分页工具条-->
+    <el-pagination
+            background
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChangePage"
+            :page-sizes="[5, 10, 15, 20]"
+            layout="sizes,prev, pager, next"
+            :total="totalCount">
+    </el-pagination>
+</div>
+<script>
+    new Vue({
+        el: "#app",
+        mounted() {
+            // this.selectAllBooks();
+            this.selectByPage(1,5);
+            this.selectAllBookTypes();
+        }, methods: {
+            handleSizeChange(val) {
+                this.limit = val;
+                this.selectByPage(this.currentPage, val);
+            },
+            handleCurrentChangePage(val) {
+                this.currentPage = val;
+                this.selectByPage(val,5);
+            },
+            // 查询所有数据
+            selectAllBooks() {
+                let _this = this;
+                //页面加载完成发送异步请求
+                $.get("../third/bookServlet/selectAllBooks", {}, function (data) {
+                    _this.tableData = data;
+                });
+            },
+            // 分页查询
+            selectByPage(currentPage,limit) {
+                let _this = this;
+                //页面加载完成发送异步请求
+                $.ajax({
+                   url:"../third/bookServlet/selectByPage",
+                    type:'post',
+                    async:true,
+                    data:{"currentPage":currentPage,"limit":limit, "formInline": JSON.stringify(_this.formInline)},
+                    success:function (pageBean){
+                       _this.tableData = pageBean.list;
+                       _this.totalCount = pageBean.totalCount;
+                        //定位到最前
+                        window.scrollTo(0, 0);
+                    }
+                });
+            },
+            // 查询所有图书
+            selectAllBookTypes() {
+                let _this = this;
+                // 图书类型
+                $.get("../third/bookServlet/selectAllBookTypes", {}, function (data) {
+                    _this.bookTypes = data;
+                });
+            },
+            tableRowClassName({row, rowIndex}) {
+                if (rowIndex === 1) {
+                    return 'warning-row';
+                } else if (rowIndex === 3) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            setCurrent(row) {
+                this.$refs.singleTable.setCurrentRow(row);
+            },
+            // 选中的列
+            handleCurrentChange(val) {
+                this.currentRow = val;
+            },
+            toggleSelection(rows) {
+                if (rows) {
+                    rows.forEach(row => {
+                        this.$refs.multipleTable.toggleRowSelection(row);
+                    });
+                } else {
+                    this.$refs.multipleTable.clearSelection();
+                }
+            },
+            // 复选框选中后执行
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+            },
+            // 表单提交
+            onSubmit(currentPage, limit) {
+                let _this = this;
+                this.ifFuzzyQuery = true;
+                //查询
+                $.ajax({
+                    url: "../third/bookServlet/fuzzyQuery",
+                    type: 'get',
+                    async: false,
+                    dataType: "json",
+                    contextType: "application/json;charset=utf-8",
+                    data: {"formInline": JSON.stringify(_this.formInline),"currentPage":currentPage,"limit":limit},
+                    success: function (pageBean) {
+                        _this.totalCount = pageBean.totalCount;
+                        _this.tableData = pageBean.list;
+                        window.scrollTo(0,0);
+                    }
+                });
+            },
+            // 新增对话框的
+            submitForm(formName) {
+                let _this = this;
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        $.ajax({
+                            url: "../third/bookServlet/insertNewBook",
+                            type: 'get',
+                            async: false,
+                            dataType: "json",
+                            contextType: "application/json;charset=utf-8",
+                            data: {"ruleForm": JSON.stringify(_this.ruleForm)},
+                            success: function (data) {
+                                if (data.flag) {
+                                    // 关闭窗口
+                                    _this.$message({
+                                        message: '添加成功',
+                                        type: 'success'
+                                    });
+                                    _this.newlyAdded = false;
+                                    _this.selectAllBooks();
+                                } else {
+                                    _this.$message.error(data.errorMsg);
+                                }
+                            }
+                        });
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            // 新增对话框的
+            updateSubmitForm(formName) {
+                let _this = this;
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        let _this = this;
+                        $.ajax({
+                            url: "../third/bookServlet/updateBook",
+                            type: 'get',
+                            async: false,
+                            dataType: "json",
+                            contextType: "application/json;charset=utf-8",
+                            data: {"currentRow": JSON.stringify(_this.currentRow)},
+                            success: function (data) {
+                                if (data.flag) {
+                                    //刷新
+                                    _this.$message({
+                                        message: '修改成功',
+                                        type: 'success'
+                                    });
+                                    _this.selectAllBooks();
+                                } else {
+                                    _this.$message.error(data.errorMsg);
+                                }
+                            }
+                        });
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+
+            //删除图书
+            deleteBook() {
+                let _this = this;
+                console.log(this.currentRow);
+                this.$confirm('此操作将永久删除该图书, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    $.ajax({
+                        url: "../third/bookServlet/deleteBook",
+                        type: 'get',
+                        async: false,
+                        dataType: "json",
+                        contextType: "application/json;charset=utf-8",
+                        data: {"currentRow": JSON.stringify(_this.currentRow)},
+                        success: function (data) {
+                            if (data.flag) {
+                                //刷新
+                                _this.$message({
+                                    message: '删除成功',
+                                    type: 'success'
+                                });
+                                _this.selectAllBooks();
+                            } else {
+                                _this.$message.error(data.errorMsg);
+                            }
+                        }
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+
+            },
+            //批量删除
+            batchDeleteBook() {
+                let _this = this;
+                console.log(this.multipleSelection);
+                this.$confirm('此操作将永久删除这些图书, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    $.ajax({
+                        url: "../third/bookServlet/batchDeleteBook",
+                        type: 'get',
+                        async: false,
+                        dataType: "json",
+                        contextType: "application/json;charset=utf-8",
+                        data: {"multipleSelection": JSON.stringify(_this.multipleSelection)},
+                        success: function (data) {
+                            if (data.flag) {
+                                //刷新
+                                _this.$message({
+                                    message: '删除成功',
+                                    type: 'success'
+                                });
+                                _this.selectAllBooks();
+                            } else {
+                                _this.$message.error(data.errorMsg);
+                            }
+                        }
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+
+            },
+        },
+        data() {
+            return {
+                // 表单查询
+                formInline: {
+                    bookName: '',
+                    bookType: '',
+                    bookAuthor: ''
+                },
+                // 类型数据
+                bookTypes: [{
+                    bookTypeName: '图书'
+                }],
+                // 表格数据
+                tableData: [],
+                // 单击选中的行
+                currentRow: {
+                    bookName: '',
+                    bookAuthor: '',
+                    bookPublicationDate: new Date(),
+                    bookPress: '',
+                    bookPrice: '',
+                    bookIsbn: '',
+                    bookType: '',
+                    bookIntroduce: '',
+                },
+                //总记录数
+                totalCount:0,
+                //当前页
+                currentPage:1,
+                //当前页面显示的条数
+                limit:5,
+                //是否模糊查询
+                ifFuzzyQuery:false,
+                // 复选框选中
+                multipleSelection: [],
+                // 新增对话框
+                newlyAdded: false,
+                formLabelWidth: '120px',
+                //修改的对话框
+                update: false,
+                // 新增对话框的数据
+                ruleForm: {
+                    bookName: '',
+                    bookAuthor: '',
+                    bookPublicationDate: new Date(),
+                    bookPress: '',
+                    bookPrice: '',
+                    bookIsbn: '',
+                    bookType: '',
+                    bookIntroduce: '',
+                },
+                rules: {
+                    bookName: [
+                        {required: true, message: '请输入图书名称', trigger: 'blur'},
+                        {min: 1, max: 30, message: '长度在 1 到 30 个字符', trigger: 'blur'}
+                    ],
+                    bookAuthor: [
+                        {required: true, message: '请输入作者', trigger: 'blur'}
+                    ],
+                    bookPublicationDate: [
+                        {required: true, message: '请选择日期', trigger: 'change'}
+                    ],
+                    bookPress: [
+                        {required: true, message: '请输入出版社', trigger: 'blur'}
+                    ],
+                    bookType: [
+                        {required: true, message: '请选择图书类型', trigger: 'change'}
+                    ],
+                    bookIsbn: [
+                        {required: true, message: '请输入ISBN码', trigger: 'blur'},
+                        // {type: 'number', message: 'ISBN必须为数字', trigger: 'blur'}
+                    ],
+                    bookPrice: [
+                        {required: true, message: '请填写活动形式', trigger: 'blur'},
+                        // {type: 'number', message: '价格必须为数字', trigger: 'blur'}
+                    ],
+                    bookIntroduce: [
+                        {required: true, message: '请填写活动形式', trigger: 'blur'}
+                    ]
+                },
+            }
+        },
+    });
+</script>
+</body>
+</html>

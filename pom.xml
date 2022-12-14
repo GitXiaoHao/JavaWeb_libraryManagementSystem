@@ -75,6 +75,16 @@
       <artifactId>jackson-core</artifactId>
       <version>2.14.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mybatis</groupId>
+      <artifactId>mybatis</artifactId>
+      <version>3.5.11</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -104,6 +114,7 @@
         <configuration>
           <port>80</port><!--  访问端口号-->
           <path>/</path><!--项目访问路径 -->
+          <uriEncoding>utf-8</uriEncoding>
         </configuration>
       </plugin>
     </plugins>

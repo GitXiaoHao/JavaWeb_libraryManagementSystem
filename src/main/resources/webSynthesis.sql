@@ -44,7 +44,7 @@ create table T_BOOK_ALL
     book_author           varchar(10)  not null,#图书作者
     book_publication_date date,#图书出版时间
     book_press            varchar(50)  not null,#出版社
-    book_introduce        varchar(200) not null,         #图书介绍
+    book_introduce        varchar(200) not null,#图书介绍
     book_price            double(7, 2) not null,#图书价格
     book_ISBN             varchar(17)  not null unique,#图书ISBN码
     book_type             varchar(10),                   #图书类型
